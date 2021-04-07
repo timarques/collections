@@ -1,0 +1,6 @@
+{
+	"verbose": true,
+	"preset": "ts-jest",
+	"testMatch": ["**/tests/**/*.test.ts"],
+	"setupFilesAfterEnv": ["jest-extended"]
+}
