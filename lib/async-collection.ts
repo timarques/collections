@@ -25,9 +25,11 @@ class AsyncCollection<T> implements AsyncIterableIterator<T> {
 	}
 
     protected readonly generate: () => AsyncIterable<T> | Iterable<T>
+	protected readonly consume: boolean
 	protected iterator: AsyncIterator<T> | Iterator<T>
 
-	constructor(parameter: Parameter<T>) {
+	constructor(parameter: Parameter<T>, consume: boolean = true) {
+		this.consume = consume
 		this.generate = typeof parameter === "function" ? parameter : () => parameter
 		this.iterator = this.createIterator()
 	}
@@ -40,12 +42,12 @@ class AsyncCollection<T> implements AsyncIterableIterator<T> {
 
 	async next(): Promise<IteratorResult<T>> {
 		const item = await this.iterator.next()
-		if (item.done) this.iterator = this.createIterator()
+		if (item.done && !this.consume) this.iterator = this.createIterator()
 		return item
 	}
 
 	return (value?: T): Promise<IteratorResult<T>> {
-		this.iterator = this.createIterator()
+		if (!this.consume) this.iterator = this.createIterator()
 		return Promise.resolve({ done: true, value })
 	}
 

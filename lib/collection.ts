@@ -5,21 +5,23 @@ type ReturnType<T> = T extends number ? number : T extends string ? string : T
 class Collection<T> implements IterableIterator<T> {
 
 	protected readonly generate: () => Iterable<T>
+	protected readonly consume: boolean
 	protected iterator: Iterator<T>
 
-	constructor(parameter: Parameter<T>) {
+	constructor(parameter: Parameter<T>, consume: boolean = true) {
 		this.generate = typeof parameter === "function" ? parameter : () => parameter
+		this.consume = consume
 		this.iterator = this.generate()[Symbol.iterator]()
 	}
 
 	next(): IteratorResult<T> {
 		const result = this.iterator.next()
-		if (result.done) this.iterator = this.generate()[Symbol.iterator]()
+		if (result.done && !this.consume) this.iterator = this.generate()[Symbol.iterator]()
 		return result
 	}
 
 	return(value?: T): IteratorResult<T> {
-		this.iterator = this.generate()[Symbol.iterator]()
+		if (!this.consume) this.iterator = this.generate()[Symbol.iterator]()
 		return { done: true, value }
 	}
 
